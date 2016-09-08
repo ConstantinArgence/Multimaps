@@ -12,53 +12,19 @@
 <link href='styles/master.css' media='all' rel='stylesheet' type='text/css' />
 <script>
 	$(function() {
-		$( "#amount-range" ).slider({
+		$("#Km-range").slider({
 			range: true,
 			min: 0,
-			max: 75000000,
-			values: [ 0, 75000000 ],
-			step: 100000,
+			max: 100,
+			values: [ 0, 100 ],
+			step: 100,
 			slide: function( event, ui ) {
-				$( "#amount" ).html( formatCurrency(ui.values[ 0 ]) + " - " + formatCurrency(ui.values[ 1 ]) );
+				$( "#Km" ).html(ui.values[ 0 ]) + " - " + (ui.values[ 1 ]) );
 			}
 		});
-		$( "#amount" ).html( formatCurrency($( "#amount-range" ).slider( "values", 0 )) +
-			" - " + formatCurrency($( "#amount-range" ).slider( "values", 1 )) );
+		$( "#Km" ).html( ($( "#Km-range" ).slider( "values", 0 )) +
+			" - " +  ($( "#Km-range" ).slider( "values", 1 )) );
 	});
-	
-	$(function() {
-		$( "#year-range" ).slider({
-			range: true,
-			min: 2000,
-			max: 2010,
-			values: [ 2000, 2010 ],
-			step: 1,
-			slide: function( event, ui ) {
-				$( "#year" ).html( ui.values[ 0 ] + " - " + ui.values[ 1 ] );
-			}
-		});
-		$( "#year" ).html( $( "#year-range" ).slider( "values", 0 ) +
-			" - " + $( "#year-range" ).slider( "values", 1 ) );
-	});
-	
-	function formatCurrency(num) 
-	{
-		num = num.toString().replace(/\$|\,/g,'');
-		if(isNaN(num))
-			num = "0";
-		sign = (num == (num = Math.abs(num)));
-		num = Math.floor(num*100+0.50000000001);
-		cents = num%100;
-		num = Math.floor(num/100).toString();
-		
-		if(cents<10)
-			cents = "0" + cents;
-		for (var i = 0; i < Math.floor((num.length-(1+i))/3); i++)
-		num = num.substring(0,num.length-(4*i+3))+','+
-		num.substring(num.length-(4*i+3));
-		
-		return (((sign)?'':'-') + '$' + num);
-	}
 	
 	</script>
 
@@ -68,46 +34,36 @@
   var addrMarker;
   var addrMarkerImage = 'http://derekeder.com/images/icons/blue-pushpin.png';
   
-  var projectMapId = 372874;
-  var wardMapId = 306615;
-  var districtMapId = 306907;
+  var projectMapId = 12NKH0-cu-AwfpfEiD83u9aGJOXzYKveqkMF0HHwq;
+  var districtMapId = 1BZkfBKRXVqoJi9SxYFWrHCyhzlMC_8dQ3SYZoirq;
   var searchRadius = 1610; //in meters ~ 1 mile
   
   var searchProjects;
-  var searchWards;
   var searchDistricts;
   
   var projects = new google.maps.FusionTablesLayer(projectMapId);
-  var wards = new google.maps.FusionTablesLayer(wardMapId);
   var districts = new google.maps.FusionTablesLayer(districtMapId);
   
   var searchStr;
   
   function initialize() {
   	geocoder = new google.maps.Geocoder();
-    var chicago = new google.maps.LatLng(41.850033, -87.6500523);
+    var chicago = new google.maps.LatLng(46.701211,1.2147244);
     var myOptions = {
       zoom: 11,
-      center: chicago,
+      center: Rosnay,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     map = new google.maps.Map(document.getElementById("map_canvas"),myOptions);
 	
 	searchProjects = null;
-	searchWards = null;
 	searchDistricts = null;
 	
-	wards.setMap(map);
 	projects.setMap(map);
 	document.getElementById("txtSearch").value = "";
 	document.getElementById("txtSearchAddress").value = "";
 	
-	document.getElementById("cbCommercial").checked = false;
-	document.getElementById("cbOther").checked = false;
-	document.getElementById("cbResidential").checked = false;
-	
 	document.getElementById("projects").checked = true;
-	document.getElementById("wards").checked = true;
 	document.getElementById("districts").checked = false;
   }
   
@@ -128,19 +84,6 @@
 		}
 	}
   
-  	function toggleWards() {
-		if (document.getElementById("wards").checked)
-		{
-			wards.setMap(map);
-		}
-		else
-		{
-			wards.setMap(null);
-		}
-			
-		toggleProjects();
-	}
- 
 	function toggleDistricts() {
 		if (document.getElementById("districts").checked)
 		{
@@ -160,28 +103,13 @@
 		var search = document.getElementById("txtSearch").value;
 		search = search.replace("'", "\\'");
 		var address = document.getElementById("txtSearchAddress").value;
-		var commercial = document.getElementById("cbCommercial").checked;
-		var other = document.getElementById("cbOther").checked;
-		var residential = document.getElementById("cbResidential").checked;
 		
-		searchStr = "SELECT Address FROM " + projectMapId + " WHERE Address not equal to ''";
-		searchStr += " AND 'Amount Allocated' >= " + $( "#amount-range" ).slider( "values", 0 ) + " AND 'Amount Allocated' <= " + $( "#amount-range" ).slider( "values", 1 );
-		searchStr += " AND 'Year' >= " + $( "#year-range" ).slider( "values", 0 ) + " AND 'Year' <= " + $( "#year-range" ).slider( "values", 1 );
+		searchStr = "SELECT Geo FROM " + projectMapId + " WHERE Geo not equal to ''";
+		searchStr += " AND 'Km' >= " + $( "#Km-range" ).slider( "values", 0 ) + " AND 'Km' <= " + $( "#Km-range" ).slider( "values", 1 );
 		if (search != "")
 			searchStr += " AND Blurb contains ignoring case '" + search + "'";
 		
 		var searchType = "";
-		if (commercial || other || residential)
-		{
-			if (commercial)
-				searchType += "Type contains ignoring case 'commercial' OR ";
-			if (other)
-				searchType += "Type contains ignoring case 'other' OR ";
-			if (residential)
-				searchType += "Type contains ignoring case 'residential' OR ";
-				
-			searchStr += " AND " + searchType.slice(0,searchType.length-3);
-		}
 		
 		// because the geocode function does a callback, we have to handle it in both cases - when they search for and address and when they dont
 		if (address != "")
@@ -236,8 +164,6 @@
 	function clearSearch() {
 		if (searchProjects != null)
 			searchProjects.setMap(null);
-		if (searchWards != null)
-			searchWards.setMap(null);
 		if (searchDistricts != null)
 			searchDistricts.setMap(null);
 		if (addrMarker != null)
